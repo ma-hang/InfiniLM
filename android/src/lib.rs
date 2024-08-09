@@ -4,6 +4,7 @@ use android_logger::Config;
 use jni::{
     objects::{JClass, JString},
     sys::jstring,
+    sys::jint,
     JNIEnv,
 };
 use log::LevelFilter;
@@ -16,9 +17,9 @@ use std::{
     },
 };
 use tokio::sync::mpsc::UnboundedReceiver;
-
+use channels::ChatRequest;
 type Service = service::Service<llama_cpu::Transformer>;
-type Chat = (String, Sender<String>);
+// type Chat = (String, Sender<String>);
 
 /// 加载模型并启动推理服务。
 #[no_mangle]
@@ -70,6 +71,23 @@ pub extern "system" fn Java_org_infinitensor_lm_Native_start(
     channels::dialog().lock().unwrap().replace(receiver);
 }
 
+#[no_mangle]
+pub extern "system" fn Java_org_infinitensor_lm_Native_startGenerate(
+    mut env: JNIEnv,
+    _class: JClass,
+    prompt: JString,
+    max_steps: jint,
+) {
+    let prompt = env
+        .get_string(&prompt)
+        .expect("Couldn't get java string!")
+        .into();
+    let max_steps = max_steps as usize;
+    let (sender, receiver) = thread_mpsc();
+    channels::generate(prompt, sender, max_steps);
+    channels::dialog().lock().unwrap().replace(receiver);
+}
+
 /// 终止生成。
 #[no_mangle]
 pub extern "system" fn Java_org_infinitensor_lm_Native_abort(_env: JNIEnv, _class: JClass) {
@@ -112,28 +130,85 @@ pub extern "system" fn Java_org_infinitensor_lm_Native_decode(
         .into_raw()
 }
 
-fn dispatch(model_dir: PathBuf, mut chat: UnboundedReceiver<Chat>) {
+// fn dispatch(model_dir: PathBuf, mut chat: UnboundedReceiver<Chat>) {
+//     // 启动 tokio 运行时
+//     let runtime = tokio::runtime::Runtime::new().unwrap();
+//     runtime.block_on(async move {
+//         let (service, _handle) = Service::load(model_dir, ());
+//         let mut session = service.launch();
+//         log::info!("session launched");
+//         while let Some((content, answer)) = chat.recv().await {
+//             log::info!("chat: {content}");
+//             session.extend(&[Message {
+//                 role: "user",
+//                 content: &content,
+//             }]);
+//             let mut chat = session.chat();
+//             while let Some(piece) = chat.decode().await {
+//                 log::debug!("piece = {piece}");
+//                 if answer.send(piece).is_err() {
+//                     log::warn!("send error");
+//                     break;
+//                 }
+//             }
+//             log::info!("chat finished");
+//         }
+//     });
+//     // 关闭 tokio 运行时
+//     runtime.shutdown_background();
+// }
+
+
+fn dispatch(model_dir: PathBuf, mut text: UnboundedReceiver<ChatRequest>) {
     // 启动 tokio 运行时
     let runtime = tokio::runtime::Runtime::new().unwrap();
     runtime.block_on(async move {
         let (service, _handle) = Service::load(model_dir, ());
-        let mut session = service.launch();
-        log::info!("session launched");
-        while let Some((content, answer)) = chat.recv().await {
-            log::info!("chat: {content}");
-            session.extend(&[Message {
-                role: "user",
-                content: &content,
-            }]);
-            let mut chat = session.chat();
-            while let Some(piece) = chat.decode().await {
-                log::debug!("piece = {piece}");
-                if answer.send(piece).is_err() {
-                    log::warn!("send error");
-                    break;
+        while let Some(request) = text.recv().await {
+            match request {
+                ChatRequest::Chat(content, answer) => {
+                    let mut session = service.launch();
+                    log::info!("session launched");
+                    // while let Some((content, answer)) = chat.recv().await {
+                    log::info!("chat: {content}");
+                    session.extend(&[Message {
+                        role: "user",
+                        content: &content,
+                    }]);
+                    let mut chat = session.chat();
+                    while let Some(piece) = chat.decode().await {
+                        log::debug!("piece = {piece}");
+                        if answer.send(piece).is_err() {
+                            log::warn!("send error");
+                            break;
+                        }
+                    }
+                    log::info!("chat finished");
+                    // }
+                }
+                ChatRequest::Generate(content, answer, max_steps) => {
+                    let mut generator = service.generate(&content, None);
+                    let mut steps = 0;
+                    // let time = Instant::now();
+                    while let Some(s) = generator.decode().await {
+                        let text_chunk = match &*s {
+                            "\\n" => "\n".to_string(),
+                            _ => s,
+                        };
+                        if answer.send(text_chunk).is_err() {
+                            log::warn!("send error");
+                            break;
+                        }
+                        steps += 1;
+                        if steps == max_steps {
+                            break;
+                        }
+                    }
+                    // let time = time.elapsed();
+                    // log::info!("Time elapsed: {:?}/tok", time.div_f32(steps as f32));
+                    log::info!("Generation complete with {} steps", steps);
                 }
             }
-            log::info!("chat finished");
         }
     });
     // 关闭 tokio 运行时
