@@ -297,7 +297,7 @@ void inferDeviceBatch(const JiugeMeta &meta, JiugeDeviceResource &rsrc,
     }
 }
 
-__C void
+INFINI_EXTERN_C void
 inferBatchJiuge(struct JiugeModel *model,
            const uint32_t *tokens, uint32_t ntok,
            const uint32_t *req_lens, uint32_t nreq, const uint32_t *req_pos,
@@ -330,7 +330,7 @@ inferBatchJiuge(struct JiugeModel *model,
     }
 }
 
-__C void
+INFINI_EXTERN_C void
 forwardBatchJiuge(struct JiugeModel *model,
              const uint32_t *tokens, uint32_t ntok,
              const uint32_t *req_lens, uint32_t nreq, const uint32_t *req_pos,
@@ -426,7 +426,7 @@ JiugeModel::JiugeModel(const JiugeMeta *_meta, const JiugeWeights *weights, infi
     }
 }
 
-__C struct JiugeModel *
+INFINI_EXTERN_C struct JiugeModel *
 createJiugeModel(const JiugeMeta *meta,
                  const JiugeWeights *weights,
                  infiniDevice_t device,
@@ -438,7 +438,7 @@ createJiugeModel(const JiugeMeta *meta,
     return model;
 }
 
-__C void destroyJiugeModel(struct JiugeModel *model) {
+INFINI_EXTERN_C void destroyJiugeModel(struct JiugeModel *model) {
     auto ndev = model->dev_resources.size();
 
     for (size_t idev = 0; idev < ndev; idev++) {
