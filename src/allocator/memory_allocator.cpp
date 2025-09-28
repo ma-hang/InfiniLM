@@ -8,7 +8,10 @@ MemoryPool::MemoryPool(size_t initialSize, size_t alignment)
         throw std::invalid_argument("Alignment must be a power of two");
     }
 
+    // std::cout<<"MemoryPool_alignment:"<<alignment<<std::endl;
+
     if (initialSize > 0) {
+        // std::cout<<"initialSize:"<<initialSize<<std::endl;
         allocateNewRegion(initialSize);
     }
 }
@@ -27,9 +30,12 @@ void *MemoryPool::alloc(size_t size) {
     // Calculate aligned size
     const size_t aligned_size = (size + _alignment - 1) & ~(_alignment - 1);
 
+    // std::cout<<"alloc_size:"<<size<<" _alignment:"<<_alignment<<" aligned_size:"<<aligned_size<<std::endl;
+
     // Find the first block with enough space (after alignment)
     auto it = _free_blocks.lower_bound(aligned_size);
     if (it == _free_blocks.end()) {
+        // std::cout<<"aligned_size:"<<aligned_size<<std::endl;
         allocateNewRegion(aligned_size);
         it = _free_blocks.lower_bound(aligned_size);
         if (it == _free_blocks.end()) {
@@ -86,6 +92,7 @@ void MemoryPool::release(void *ptr) {
 void *MemoryPool::allocateNewRegion(size_t size) {
     // Allocate exactly the requested size
     void *ptr = nullptr;
+    std::cout<<"allocate_size:"<<size<<std::endl;
     RUN_INFINI(infinirtMalloc(&ptr, size));
     _base_regions.push_back(ptr);
 

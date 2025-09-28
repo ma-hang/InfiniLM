@@ -6,6 +6,7 @@ InferenceContext::InferenceContext(infiniopHandle_t op_handle_, std::shared_ptr<
     : op_handle(op_handle_), memory_pool(memory_pool_), cache_manager(cache_manager), stream(stream) {}
 
 void InferenceContext::ensure_workspace(size_t required_size) {
+    // std::cout<<"ensure_workspace_size:"<<required_size<<std::endl;
     if (required_size > current_workspace_size || !workspace_storage) {
         workspace_storage = Storage::createFromPool(required_size, memory_pool);
         current_workspace_size = required_size;
@@ -25,6 +26,7 @@ void InferenceContext::add(std::shared_ptr<Tensor> c,
 
     size_t workspace_size = 0;
     RUN_INFINI(infiniopGetAddWorkspaceSize(desc, &workspace_size));
+    // std::cout<<"add operator_size:"<<workspace_size<<std::endl;
     ensure_workspace(workspace_size);
     void *workspace = workspace_storage->memory();
 
@@ -48,6 +50,7 @@ void InferenceContext::rmsnorm(std::shared_ptr<Tensor> y,
 
     size_t workspace_size = 0;
     RUN_INFINI(infiniopGetRMSNormWorkspaceSize(desc, &workspace_size));
+    // std::cout<<"rmsnorm operator_size:"<<workspace_size<<std::endl;
     ensure_workspace(workspace_size);
     void *workspace = workspace_storage->memory();
 
@@ -70,6 +73,7 @@ void InferenceContext::gemm(std::shared_ptr<Tensor> c,
 
     size_t workspace_size = 0;
     RUN_INFINI(infiniopGetGemmWorkspaceSize(desc, &workspace_size));
+    // std::cout<<"gemm operator_size:"<<workspace_size<<std::endl;
     ensure_workspace(workspace_size);
     void *workspace = workspace_storage->memory();
 
@@ -114,6 +118,7 @@ void InferenceContext::rope(std::shared_ptr<Tensor> q,
 
     size_t workspace_size = 0;
     RUN_INFINI(infiniopGetRoPEWorkspaceSize(desc, &workspace_size));
+    // std::cout<<"rope operator_size:"<<workspace_size<<std::endl;
     ensure_workspace(workspace_size);
     void *workspace = workspace_storage->memory();
 
@@ -136,6 +141,7 @@ void InferenceContext::causalSoftmax(std::shared_ptr<Tensor> y,
 
     size_t workspace_size = 0;
     RUN_INFINI(infiniopGetCausalSoftmaxWorkspaceSize(desc, &workspace_size));
+    // std::cout<<"causalSoftmax operator_size:"<<workspace_size<<std::endl;
     ensure_workspace(workspace_size);
     void *workspace = workspace_storage->memory();
 
@@ -160,6 +166,7 @@ void InferenceContext::topkrouter(std::shared_ptr<Tensor> values,  // F32
 
     size_t workspace_size = 0;
     RUN_INFINI(infiniopGetTopkrouterWorkspaceSize(desc, &workspace_size));
+    // std::cout<<"topkrouter operator_size:"<<workspace_size<<std::endl;
     ensure_workspace(workspace_size);
     void *workspace = workspace_storage->memory();
 
@@ -182,6 +189,7 @@ void InferenceContext::swiglu(std::shared_ptr<Tensor> out,
 
     size_t workspace_size = 0;
     RUN_INFINI(infiniopGetSwiGLUWorkspaceSize(desc, &workspace_size));
+    // std::cout<<"swiglu operator_size:"<<workspace_size<<std::endl;
     ensure_workspace(workspace_size);
     void *workspace = workspace_storage->memory();
 
@@ -203,6 +211,7 @@ void InferenceContext::randomSample(std::shared_ptr<Tensor> out,
 
     size_t workspace_size = 0;
     RUN_INFINI(infiniopGetRandomSampleWorkspaceSize(desc, &workspace_size));
+    // std::cout<<"randomSample operator_size:"<<workspace_size<<std::endl;
     ensure_workspace(workspace_size);
     void *workspace = workspace_storage->memory();
 
@@ -274,6 +283,7 @@ void InferenceContext::dequant(std::shared_ptr<Tensor> weight,
 
     size_t workspace_size = 0;
     RUN_INFINI(infiniopGetDequantizeAWQWorkspaceSize(desc, &workspace_size));
+    // std::cout<<"dequant operator_size:"<<workspace_size<<std::endl;
     ensure_workspace(workspace_size);
     void *workspace = workspace_storage->memory();
 

@@ -35,6 +35,7 @@ class DeviceType(ctypes.c_int):
     DEVICE_TYPE_MOORE = 5
     DEVICE_TYPE_ILUVATAR = 6
     DEVICE_TYPE_KUNLUN = 7
+    DEVICE_TYPE_OPENCL = 9 #根据infiniCore中infiniDevice_t的定义编号
 
 
 class KVCacheCStruct(ctypes.Structure):

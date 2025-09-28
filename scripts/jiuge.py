@@ -677,15 +677,18 @@ def test():
         device_type = DeviceType.DEVICE_TYPE_ILUVATAR
     elif sys.argv[1] == "--kunlun":
         device_type = DeviceType.DEVICE_TYPE_KUNLUN
+    elif sys.argv[1] == "--opencl":
+        device_type = DeviceType.DEVICE_TYPE_OPENCL
     else:
         print(
-            "Usage: python jiuge.py [--cpu | --nvidia| --cambricon | --ascend | --metax | --moore] <path/to/model_dir> [n_device]"
+            "Usage: python jiuge.py [--cpu | --nvidia| --cambricon | --ascend | --metax | --moore | --opencl] <path/to/model_dir> [n_device]"
         )
         sys.exit(1)
 
     ndev = int(sys.argv[3]) if len(sys.argv) > 3 else 1
     model = JiugeForCauslLM(model_path, device_type, ndev)
-    model.generate("山东最高的山是？", 500)
+    result,_=model.generate("山东最高的山是？", 500)
+    print(result)
     model.destroy_model_instance()
 
 

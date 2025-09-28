@@ -18,6 +18,7 @@ std::shared_ptr<Storage> Storage::createAsync(size_t size, infinirtStream_t stre
 }
 
 std::shared_ptr<Storage> Storage::createFromPool(size_t size, std::shared_ptr<MemoryPool> pool) {
+    // std::cout<<"createFromPool_size"<<size<<std::endl;
     auto storage = std::shared_ptr<Storage>(new Storage());
     storage->_memory_pool = pool;
     if (pool) {

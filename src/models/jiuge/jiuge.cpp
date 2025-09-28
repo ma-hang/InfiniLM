@@ -407,6 +407,7 @@ JiugeModel::JiugeModel(const JiugeMeta *_meta, const JiugeWeights *weights, infi
     int ndev = int(device_ids.size());
     device = device_;
     dev_ids = device_ids;
+    std::cout<<"device:"<<device<<std::endl;
     dev_resources = std::vector<JiugeDeviceResource>(ndev);
     states = std::vector<InferState>(ndev);
     threads.resize(ndev);
@@ -434,6 +435,7 @@ createJiugeModel(const JiugeMeta *meta,
                  const int *dev_ids) {
     std::vector<int> device_ids(ndev);
     std::copy(dev_ids, dev_ids + ndev, device_ids.begin());
+    std::cout<<"copy succeed"<<std::endl;
     JiugeModel *model = new JiugeModel(meta, weights, device, device_ids);
     return model;
 }
