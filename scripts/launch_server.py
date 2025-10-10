@@ -24,6 +24,7 @@ DEVICE_TYPE_MAP = {
     "ascend": DeviceType.DEVICE_TYPE_ASCEND,
     "metax": DeviceType.DEVICE_TYPE_METAX,
     "moore": DeviceType.DEVICE_TYPE_MOORE,
+    "opencl":DeviceType.DEVICE_TYPE_OPENCL
 }
 
 
